@@ -31,4 +31,10 @@ const CardContent = ({ className, children }) => (
   </div>
 );
 
-export { Card, CardHeader, CardTitle, CardDescription, CardContent };
+const CardFooter = ({ className, children }) => (
+    <div className={cn('flex items-center p-6 pt-0', className)}>
+        {children}
+    </div>
+);
+
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };

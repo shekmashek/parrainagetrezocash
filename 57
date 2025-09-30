@@ -1,0 +1,78 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { TIERS, REWARDS } from '../data/mockData';
+import { Award, Gift } from 'lucide-react';
+
+const ProgramInfoPage = () => {
+  const tiersToShow = Object.values(TIERS).sort((a, b) => a.min - b.min);
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <h2 className="text-3xl font-bold tracking-tight">Le Programme Ambassadeur</h2>
+        <p className="text-muted-foreground">Toutes les informations sur les niveaux, commissions et récompenses.</p>
+      </header>
+
+      <section>
+        <h3 className="text-2xl font-semibold mb-6">🏆 Les Niveaux d'Ambassadeur</h3>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {tiersToShow.map(tier => (
+            <Card key={tier.name} className="flex flex-col">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <Award className={`h-10 w-10 flex-shrink-0 ${tier.color}`} />
+                  <div>
+                    <CardTitle className={tier.color}>{tier.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{tier.min}+ parrainages</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                {tier.commission > 0 ? (
+                  <div>
+                    <p className="text-4xl font-bold">{tier.commission * 100}%</p>
+                    <p className="text-muted-foreground mt-1">de commission sur vos filleuls</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Gagnez <strong>1 mois gratuit</strong> pour chaque filleul validé.
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-2xl font-semibold mb-6">🎁 Avantages et Récompenses</h3>
+        <Card>
+            <CardContent className="p-6 grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 className="font-semibold text-lg mb-2">Niveau Bronze (1-9 parrainages)</h4>
+                    <p className="text-muted-foreground mb-4">Votre entrée dans le cercle des ambassadeurs. Chaque filleul validé vous rapporte un mois d'abonnement gratuit.</p>
+                    <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-3"><span className="text-primary font-bold">✓</span> <strong>1 filleul validé = 1 mois gratuit</strong>.</li>
+                        <li className="flex items-start gap-3"><span className="text-primary font-bold">✓</span> Cumulez jusqu'à 9 mois gratuits avant de passer au niveau Argent.</li>
+                    </ul>
+                </div>
+                 <div>
+                    <h4 className="font-semibold text-lg mb-2">Niveaux Argent et Supérieur</h4>
+                    <p className="text-muted-foreground mb-4">Devenez un partenaire actif et gagnez des commissions récurrentes. En plus, à 10 filleuls, débloquez une récompense spéciale : l'abonnement à vie à -50% !</p>
+                    <ul className="space-y-2 text-sm">
+                        <li className="flex items-start gap-3"><strong className={TIERS.ARGENT.color}>Argent (10+):</strong> 10% de commission</li>
+                        <li className="flex items-start gap-3"><strong className={TIERS.OR.color}>Or (25+):</strong> 15% de commission</li>
+                        <li className="flex items-start gap-3"><strong className={TIERS.PLATINUM.color}>Platinum (50+):</strong> 20% de commission</li>
+                        <li className="flex items-start gap-3"><strong className={TIERS.DIAMANT.color}>Diamant (100+):</strong> 25% de commission</li>
+                        <li className="flex items-start gap-3"><strong className={TIERS.LEGENDAIRE.color}>Légendaire (200+):</strong> 30% de commission</li>
+                        <li className="flex items-start gap-3"><strong className={TIERS.GLOBALE.color}>Globale (500+):</strong> 35% de commission</li>
+                    </ul>
+                </div>
+            </CardContent>
+        </Card>
+      </section>
+    </div>
+  );
+};
+
+export default ProgramInfoPage;

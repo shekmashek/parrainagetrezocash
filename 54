@@ -1,0 +1,75 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Button } from '../components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { TIERS } from '../data/mockData';
+import { Award, DollarSign, Gift, Zap } from 'lucide-react';
+
+const LandingPage = () => {
+  const tiersToShow = [TIERS.BRONZE, TIERS.ARGENT, TIERS.OR, TIERS.DIAMANT];
+
+  return (
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="container mx-auto px-4 py-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-primary">TRÉZO CASH</h1>
+        <div className="space-x-2">
+          <Button asChild variant="ghost">
+            <Link to="/login">Connexion</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/signup">S'inscrire</Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4">
+        {/* Hero Section */}
+        <section className="text-center py-20">
+          <h2 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4">
+            Gagnez jusqu'à <span className="text-primary">30% de commission</span>
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Rejoignez le programme Ambassadeur Trézo Cash et transformez votre réseau en source de revenus récurrents.
+          </p>
+          <Button asChild size="lg">
+            <Link to="/signup">Devenir Ambassadeur <Zap className="ml-2 h-5 w-5" /></Link>
+          </Button>
+          <img src="https://i.ibb.co/67X3xfS/trezo-cash-preview.png" alt="Aperçu du tableau de bord Trézo Cash" className="mt-12 rounded-lg shadow-2xl mx-auto" />
+        </section>
+
+        {/* Tiers Section */}
+        <section className="py-20">
+          <h3 className="text-3xl font-bold text-center mb-12">Les Niveaux d'Ambassadeur</h3>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {tiersToShow.map(tier => (
+              <Card key={tier.name} className="flex flex-col text-center items-center">
+                <CardHeader>
+                  <Award className={`h-10 w-10 mb-4 mx-auto ${tier.color}`} />
+                  <CardTitle className={tier.color}>{tier.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  {tier.commission > 0 ? (
+                    <p className="text-4xl font-bold">{tier.commission * 100}%</p>
+                  ) : (
+                    <Gift className="h-8 w-8 mx-auto" />
+                  )}
+                  <p className="text-muted-foreground mt-2">
+                    {tier.commission > 0 ? 'de commission' : 'Mois gratuits'}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border mt-20">
+        <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
+          <p>&copy; 2025 Trézo Cash. Tous droits réservés.</p>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;

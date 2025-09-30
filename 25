@@ -6,7 +6,7 @@ const SponsorTable = ({ sponsors, onSponsorSelect }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Vue d'ensemble des Ambassadeurs</CardTitle>
+        <CardTitle>Liste des Ambassadeurs</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">

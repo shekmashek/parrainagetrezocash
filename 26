@@ -1,5 +1,5 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Copy, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import Badge from '../ui/Badge';
 import { cn } from '../../lib/utils';
@@ -16,6 +16,8 @@ const paymentStatusStyles = {
 }
 
 const AmbassadorDetailsModal = ({ sponsor, onClose }) => {
+  const [ibanCopied, setIbanCopied] = useState(false);
+
   if (!sponsor) return null;
 
   const formatDate = (dateString) => {
@@ -24,6 +26,12 @@ const AmbassadorDetailsModal = ({ sponsor, onClose }) => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleCopy = (text, setCopied) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -47,6 +55,32 @@ const AmbassadorDetailsModal = ({ sponsor, onClose }) => {
           </button>
         </CardHeader>
         <CardContent className="space-y-8 p-6">
+          {/* Banking Info */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Informations Bancaires (SEPA)</h4>
+            <div className="p-4 bg-secondary rounded-lg space-y-3">
+              {sponsor.bankingInfo ? (
+                <>
+                  <div>
+                    <p className="text-xs text-muted-foreground">IBAN</p>
+                    <div className="flex items-center justify-between">
+                      <p className="font-mono font-medium">{sponsor.bankingInfo.iban}</p>
+                      <button onClick={() => handleCopy(sponsor.bankingInfo.iban, setIbanCopied)} className="p-1.5 rounded-md hover:bg-muted/50">
+                        {ibanCopied ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4 text-muted-foreground" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">BIC / SWIFT</p>
+                    <p className="font-mono font-medium">{sponsor.bankingInfo.bic}</p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-2">Aucune information bancaire fournie.</p>
+              )}
+            </div>
+          </div>
+        
           {/* Earnings History */}
           <div>
             <h4 className="text-lg font-semibold mb-4">Historique des Gains</h4>

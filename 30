@@ -1,0 +1,114 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Banknote, Edit, Save, X } from 'lucide-react';
+
+const BankingInfoCard = ({ bankingInfo, onUpdate }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [iban, setIban] = useState('');
+  const [bic, setBic] = useState('');
+
+  useEffect(() => {
+    if (bankingInfo) {
+      setIban(bankingInfo.iban);
+      setBic(bankingInfo.bic);
+    } else {
+      setIban('');
+      setBic('');
+    }
+  }, [bankingInfo]);
+
+  const handleSave = () => {
+    onUpdate({ iban, bic });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    if (bankingInfo) {
+      setIban(bankingInfo.iban);
+      setBic(bankingInfo.bic);
+    } else {
+      setIban('');
+      setBic('');
+    }
+    setIsEditing(false);
+  };
+  
+  const maskIban = (iban) => {
+    if (!iban) return '';
+    return `${iban.substring(0, 4)} **** **** **** ${iban.substring(iban.length - 4)}`;
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Informations Bancaires</CardTitle>
+        {!isEditing && (
+          <button onClick={() => setIsEditing(true)} className="p-2 rounded-md hover:bg-muted">
+            <Edit className="h-4 w-4 text-muted-foreground" />
+          </button>
+        )}
+      </CardHeader>
+      <CardContent>
+        {isEditing ? (
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="iban" className="block text-sm font-medium text-muted-foreground mb-1">IBAN</label>
+              <input 
+                id="iban"
+                type="text"
+                value={iban}
+                onChange={(e) => setIban(e.target.value)}
+                placeholder="FR76..."
+                className="w-full p-2 bg-secondary rounded-md text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="bic" className="block text-sm font-medium text-muted-foreground mb-1">BIC / SWIFT</label>
+              <input 
+                id="bic"
+                type="text"
+                value={bic}
+                onChange={(e) => setBic(e.target.value)}
+                placeholder="AGRIFRPPXXX"
+                className="w-full p-2 bg-secondary rounded-md text-sm"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={handleCancel} className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-md hover:bg-muted">
+                <X className="h-4 w-4" /> Annuler
+              </button>
+              <button onClick={handleSave} className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                <Save className="h-4 w-4" /> Enregistrer
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {bankingInfo?.iban ? (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground">IBAN</p>
+                  <p className="font-mono font-semibold">{maskIban(bankingInfo.iban)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">BIC / SWIFT</p>
+                  <p className="font-mono font-semibold">{bankingInfo.bic}</p>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <Banknote className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Aucune information bancaire.</p>
+                <button onClick={() => setIsEditing(true)} className="text-sm text-primary font-semibold mt-1">
+                  Ajouter vos informations
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default BankingInfoCard;

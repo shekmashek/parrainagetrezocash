@@ -1,0 +1,65 @@
+import React, { useState } from 'react';
+import { getAmbassadorData } from '../data/mockData';
+import PaymentHistoryTable from '../components/ambassador/PaymentHistoryTable';
+import ActiveReferralsModal from '../components/ambassador/ActiveReferralsModal';
+import { Card, CardContent } from '../components/ui/Card';
+import { Link } from 'react-router-dom';
+import { Info } from 'lucide-react';
+
+const PaymentHistoryPage = () => {
+    const [data] = useState(getAmbassadorData('usr_007'));
+    const [selectedMonthData, setSelectedMonthData] = useState(null);
+
+    const handleViewMonthDetails = (paymentRecord) => {
+        setSelectedMonthData(paymentRecord);
+    };
+
+    const handleCloseModal = () => {
+        setSelectedMonthData(null);
+    };
+
+    if (!data) {
+        return <div>Chargement...</div>;
+    }
+
+    const hasCommissions = data.currentTier.min >= 10;
+
+    return (
+        <div className="space-y-6">
+            <header>
+                <h2 className="text-3xl font-bold tracking-tight">Historique des Paiements</h2>
+                <p className="text-muted-foreground">Suivez toutes les commissions que vous avez reçues.</p>
+            </header>
+
+            {hasCommissions ? (
+                <PaymentHistoryTable 
+                    paymentHistory={data.paymentHistory} 
+                    onViewDetails={handleViewMonthDetails}
+                />
+            ) : (
+                <Card className="mt-8">
+                    <CardContent className="p-8 flex flex-col items-center justify-center text-center">
+                        <Info className="h-12 w-12 text-primary mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">Historique non disponible</h3>
+                        <p className="text-muted-foreground max-w-md">
+                            Vous devez atteindre le niveau <strong>Argent</strong> (10 parrainages validés) pour commencer à gagner des commissions et accéder à votre historique de paiements.
+                        </p>
+                        <Link to="/ambassador" className="mt-6 inline-flex items-center px-4 py-2 text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors">
+                            Retour au tableau de bord
+                        </Link>
+                    </CardContent>
+                </Card>
+            )}
+
+            {selectedMonthData && (
+                <ActiveReferralsModal 
+                    paymentRecord={selectedMonthData}
+                    tier={data.currentTier}
+                    onClose={handleCloseModal}
+                />
+            )}
+        </div>
+    );
+};
+
+export default PaymentHistoryPage;

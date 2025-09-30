@@ -1,0 +1,160 @@
+/*
+          # Initial Schema Setup
+          This script sets up the foundational tables for the Trézo Cash Ambassador Program, including profiles, subscriptions, and commission payments. It also establishes security policies and automation for user profile creation.
+
+          ## Query Description: This operation is foundational and will create new tables and functions in your public schema. It is designed to be run on a new or empty project. It does not delete any existing data but sets up the core structure for the application. It is safe to run, but as a precaution for any database modification, a backup is always a good practice.
+          
+          ## Metadata:
+          - Schema-Category: "Structural"
+          - Impact-Level: "Medium"
+          - Requires-Backup: true
+          - Reversible: false
+          
+          ## Structure Details:
+          - Tables Created: profiles, subscriptions, payments
+          - Functions Created: generate_referral_code, handle_new_user
+          - Triggers Created: on_auth_user_created
+          - RLS Policies: Enabled and configured for all new tables.
+          
+          ## Security Implications:
+          - RLS Status: Enabled
+          - Policy Changes: Yes, new policies are created to restrict data access.
+          - Auth Requirements: Policies are based on `auth.uid()`.
+          
+          ## Performance Impact:
+          - Indexes: Primary keys and foreign keys are indexed automatically.
+          - Triggers: A trigger is added to `auth.users` which runs on new user creation.
+          - Estimated Impact: Low impact on a new project.
+          */
+
+-- 1. UTILITY FUNCTION TO GENERATE RANDOM REFERRAL CODES
+CREATE OR REPLACE FUNCTION generate_referral_code()
+RETURNS TEXT AS $$
+DECLARE
+  new_code TEXT;
+  found BOOLEAN;
+BEGIN
+  LOOP
+    new_code := (
+      SELECT string_agg(c, '')
+      FROM (
+        SELECT c
+        FROM unnest(string_to_array('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', NULL)) AS c
+        ORDER BY random()
+        LIMIT 8
+      ) AS sub
+    );
+    SELECT EXISTS (SELECT 1 FROM public.profiles WHERE referral_code = new_code) INTO found;
+    IF NOT found THEN
+      RETURN new_code;
+    END IF;
+  END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 2. PROFILES TABLE
+-- Stores public-facing user information.
+CREATE TABLE public.profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  full_name TEXT,
+  email TEXT,
+  referral_code TEXT UNIQUE NOT NULL DEFAULT generate_referral_code(),
+  sponsor_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  iban TEXT,
+  bic TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE public.profiles IS 'Stores public user data, linked to auth.users.';
+
+-- 3. SUBSCRIPTIONS TABLE
+-- Tracks user subscriptions to different packs.
+CREATE TABLE public.subscriptions (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  pack_id TEXT NOT NULL, -- e.g., 'solo_monthly', 'team_yearly'
+  status TEXT NOT NULL CHECK (status IN ('active', 'trialing', 'canceled')),
+  start_date TIMESTAMPTZ NOT NULL DEFAULT now(),
+  end_date TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE public.subscriptions IS 'Tracks user subscriptions to various packs.';
+
+-- 4. PAYMENTS TABLE
+-- Logs commission payments to ambassadors.
+CREATE TABLE public.payments (
+  id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  ambassador_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  amount NUMERIC(10, 2) NOT NULL,
+  payment_month DATE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'failed')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+COMMENT ON TABLE public.payments IS 'Logs commission payments made to ambassadors.';
+
+-- 5. AUTOMATIC PROFILE CREATION
+-- Function to create a profile when a new user signs up.
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+DECLARE
+  sponsor_profile RECORD;
+BEGIN
+  -- Extract sponsor_id from metadata if it exists
+  IF NEW.raw_user_meta_data->>'sponsor_code' IS NOT NULL THEN
+    SELECT id INTO sponsor_profile FROM public.profiles WHERE referral_code = NEW.raw_user_meta_data->>'sponsor_code';
+  END IF;
+
+  INSERT INTO public.profiles (id, full_name, email, sponsor_id)
+  VALUES (
+    NEW.id,
+    NEW.raw_user_meta_data->>'full_name',
+    NEW.email,
+    sponsor_profile.id
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function on new user creation.
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 6. ROW LEVEL SECURITY (RLS)
+-- Enable RLS for all tables.
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies for Profiles
+CREATE POLICY "Users can view their own profile."
+  ON public.profiles FOR SELECT
+  USING (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile."
+  ON public.profiles FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+  
+CREATE POLICY "Authenticated users can view public profile info."
+  ON public.profiles FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- RLS Policies for Subscriptions
+CREATE POLICY "Users can view their own subscriptions."
+  ON public.subscriptions FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- RLS Policies for Payments
+CREATE POLICY "Ambassadors can view their own payments."
+  ON public.payments FOR SELECT
+  USING (auth.uid() = ambassador_id);
+
+-- 7. INDEXES FOR PERFORMANCE
+CREATE INDEX ON public.profiles(sponsor_id);
+CREATE INDEX ON public.subscriptions(user_id);
+CREATE INDEX ON public.payments(ambassador_id);

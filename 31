@@ -1,0 +1,53 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import Badge from '../ui/Badge';
+import { cn } from '../../lib/utils';
+
+const paymentStatusStyles = {
+    'Validé': 'bg-green-500/20 text-green-400 border-green-500/30',
+    'En attente': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+};
+
+const PaymentHistoryCard = ({ paymentHistory }) => {
+  if (!paymentHistory || paymentHistory.length === 0) {
+    return null;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Historique des Paiements</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs text-muted-foreground uppercase bg-secondary/50">
+              <tr>
+                <th scope="col" className="px-6 py-3">Mois</th>
+                <th scope="col" className="px-6 py-3 text-center">Filleuls Actifs</th>
+                <th scope="col" className="px-6 py-3 text-right">Commission</th>
+                <th scope="col" className="px-6 py-3 text-center">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              {paymentHistory.map((payment) => (
+                <tr key={payment.id} className="border-b border-border last:border-0">
+                  <td className="px-6 py-4 font-medium">{payment.month}</td>
+                  <td className="px-6 py-4 text-center">{payment.activeReferrals}</td>
+                  <td className="px-6 py-4 text-right font-semibold">€{payment.commission.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-center">
+                    <Badge className={cn(paymentStatusStyles[payment.status])}>
+                      {payment.status}
+                    </Badge>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default PaymentHistoryCard;

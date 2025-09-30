@@ -1,0 +1,33 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../ui/Card';
+import { ArrowRight, Users } from 'lucide-react';
+
+const ReferralsSummaryCard = ({ referralsCount }) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mes Filleuls</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center space-x-4">
+            <div className="p-3 rounded-full bg-secondary">
+                <Users className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+                <p className="text-sm text-muted-foreground">Total des filleuls</p>
+                <p className="text-2xl font-bold">{referralsCount}</p>
+            </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Link to="/referrals" className="flex items-center text-sm font-semibold text-primary hover:underline">
+          Gérer mes filleuls
+          <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default ReferralsSummaryCard;

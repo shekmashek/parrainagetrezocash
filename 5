@@ -1,18 +1,60 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
 import MainLayout from './components/layout/MainLayout';
+import ProtectedRoute from './components/layout/ProtectedRoute';
+
+import LandingPage from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
 import AmbassadorDashboard from './pages/AmbassadorDashboard';
+import PaymentHistoryPage from './pages/PaymentHistoryPage';
+import ReferralsPage from './pages/ReferralsPage';
+import ProgramInfoPage from './pages/ProgramInfoPage';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminAmbassadorsPage from './pages/AdminAmbassadorsPage';
+import AdminRevenuePage from './pages/AdminRevenuePage';
+import AdminAnalyticsPage from './pages/AdminAnalyticsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
 
 function App() {
+  const { session } = useAuth();
+
   return (
-    <MainLayout>
-      <Routes>
-        <Route path="/" element={<Navigate to="/ambassador" replace />} />
-        <Route path="/ambassador" element={<AmbassadorDashboard />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-      </Routes>
-    </MainLayout>
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={!session ? <LandingPage /> : <Navigate to="/ambassador" />} />
+      <Route path="/login" element={!session ? <LoginPage /> : <Navigate to="/ambassador" />} />
+      <Route path="/signup" element={!session ? <SignUpPage /> : <Navigate to="/ambassador" />} />
+
+      {/* Protected Routes */}
+      <Route 
+        path="/*"
+        element={
+          <ProtectedRoute>
+            <MainLayout>
+              <Routes>
+                <Route path="/ambassador" element={<AmbassadorDashboard />} />
+                <Route path="/referrals" element={<ReferralsPage />} />
+                <Route path="/history" element={<PaymentHistoryPage />} />
+                <Route path="/program-info" element={<ProgramInfoPage />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/ambassadors" element={<AdminAmbassadorsPage />} />
+                <Route path="/admin/users" element={<AdminUsersPage />} />
+                <Route path="/admin/revenue" element={<AdminRevenuePage />} />
+                <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+
+                {/* Fallback for any other authenticated route */}
+                <Route path="*" element={<Navigate to="/ambassador" replace />} />
+              </Routes>
+            </MainLayout>
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 

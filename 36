@@ -1,0 +1,100 @@
+import React, { useState, useMemo } from 'react';
+import { getAmbassadorData } from '../data/mockData';
+import ReferralsTable from '../components/ambassador/ReferralsTable';
+import { Input } from '../components/ui/Input';
+import { cn } from '../lib/utils';
+
+const ReferralsPage = () => {
+    const [data] = useState(getAmbassadorData('usr_007'));
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortConfig, setSortConfig] = useState({ key: 'registrationDate', direction: 'descending' });
+
+    const filteredAndSortedReferrals = useMemo(() => {
+        if (!data) return [];
+
+        let sortableItems = [...data.referrals];
+
+        // Filtering
+        sortableItems = sortableItems.filter(referral => {
+            const nameMatch = referral.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const statusMatch = statusFilter === 'all' || referral.status === statusFilter;
+            return nameMatch && statusMatch;
+        });
+
+        // Sorting
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                if (a[sortConfig.key] < b[sortConfig.key]) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (a[sortConfig.key] > b[sortConfig.key]) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        return sortableItems;
+    }, [data, searchTerm, statusFilter, sortConfig]);
+
+    const handleSort = (key) => {
+        let direction = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const statusOptions = [
+        { value: 'all', label: 'Tous' },
+        { value: 'actif', label: 'Actifs' },
+        { value: 'essai', label: 'En essai' },
+        { value: 'inactif', label: 'Inactifs' },
+    ];
+
+    if (!data) return <div>Chargement...</div>;
+
+    return (
+        <div className="space-y-6">
+            <header>
+                <h2 className="text-3xl font-bold tracking-tight">Mes Filleuls</h2>
+                <p className="text-muted-foreground">Gérez et suivez tous les utilisateurs que vous avez parrainés.</p>
+            </header>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+                <Input
+                    type="text"
+                    placeholder="Rechercher par nom..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="max-w-sm"
+                />
+                <div className="flex items-center gap-2">
+                    {statusOptions.map(option => (
+                        <button
+                            key={option.value}
+                            onClick={() => setStatusFilter(option.value)}
+                            className={cn(
+                                'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
+                                statusFilter === option.value
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-secondary text-muted-foreground hover:bg-muted'
+                            )}
+                        >
+                            {option.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <ReferralsTable 
+                referrals={filteredAndSortedReferrals}
+                onSort={handleSort}
+                sortConfig={sortConfig}
+            />
+        </div>
+    );
+};
+
+export default ReferralsPage;

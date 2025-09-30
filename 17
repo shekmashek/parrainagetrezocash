@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getAmbassadorData } from '../data/mockData';
 import StatusCard from '../components/ambassador/StatusCard';
 import StatsGrid from '../components/ambassador/StatsGrid';
 import CommissionsCard from '../components/ambassador/CommissionsCard';
-import ReferralsList from '../components/ambassador/ReferralsList';
 import RewardsCard from '../components/ambassador/RewardsCard';
 import ReferralLinkCard from '../components/ambassador/ReferralLinkCard';
+import BankingInfoCard from '../components/ambassador/BankingInfoCard';
+import ReferralsSummaryCard from '../components/ambassador/ReferralsSummaryCard';
 
 const AmbassadorDashboard = () => {
-  // We'll use the first ambassador's data for this example
-  const data = getAmbassadorData('usr_001');
+  // We'll use an ambassador who has commissions to show the history
+  const [data, setData] = useState(getAmbassadorData('usr_001'));
+
+  const handleBankingInfoUpdate = (newBankingInfo) => {
+    // In a real app, you would make an API call to update the data
+    // For this mock, we just update the local state
+    setData(prevData => ({
+      ...prevData,
+      bankingInfo: newBankingInfo
+    }));
+    console.log("Banking info updated:", newBankingInfo);
+  };
 
   if (!data) {
     return <div>Chargement des données de l'ambassadeur...</div>;
@@ -39,12 +50,17 @@ const AmbassadorDashboard = () => {
              <CommissionsCard 
                 monthlyCommission={data.monthlyCommission}
                 totalEarned={data.totalEarned}
-             />
+            />
           )}
-          <ReferralsList referrals={data.referrals} />
+          <ReferralsSummaryCard referralsCount={data.referrals.length} />
         </div>
         <div className="lg:col-span-1 space-y-6">
+          <BankingInfoCard 
+            bankingInfo={data.bankingInfo}
+            onUpdate={handleBankingInfoUpdate}
+          />
           <RewardsCard 
+            currentTier={data.currentTier}
             validatedReferrals={data.validatedReferrals}
             usedRewards={data.usedRewards}
             rewardsToActivate={data.rewardsToActivate}
