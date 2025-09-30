@@ -1,0 +1,35 @@
+import React, { useState, useCallback } from 'react';
+import { AMBASSADORS_DATA, getAmbassadorData } from '../data/mockData';
+import SponsorTable from '../components/admin/SponsorTable';
+import AmbassadorDetailsModal from '../components/admin/AmbassadorDetailsModal';
+
+const AdminDashboard = () => {
+  const [selectedSponsor, setSelectedSponsor] = useState(null);
+  const sponsors = AMBASSADORS_DATA.map(ambassador => getAmbassadorData(ambassador.id));
+
+  const handleSponsorSelect = useCallback((sponsor) => {
+    setSelectedSponsor(sponsor);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedSponsor(null);
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <h2 className="text-3xl font-bold tracking-tight">Tableau de Bord Superadmin</h2>
+        <p className="text-muted-foreground">Cliquez sur un ambassadeur pour voir son historique détaillé.</p>
+      </header>
+      <SponsorTable sponsors={sponsors} onSponsorSelect={handleSponsorSelect} />
+      {selectedSponsor && (
+        <AmbassadorDetailsModal 
+          sponsor={selectedSponsor} 
+          onClose={handleCloseModal} 
+        />
+      )}
+    </div>
+  );
+};
+
+export default AdminDashboard;

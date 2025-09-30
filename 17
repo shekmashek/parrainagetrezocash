@@ -1,0 +1,59 @@
+import React from 'react';
+import { getAmbassadorData } from '../data/mockData';
+import StatusCard from '../components/ambassador/StatusCard';
+import StatsGrid from '../components/ambassador/StatsGrid';
+import CommissionsCard from '../components/ambassador/CommissionsCard';
+import ReferralsList from '../components/ambassador/ReferralsList';
+import RewardsCard from '../components/ambassador/RewardsCard';
+import ReferralLinkCard from '../components/ambassador/ReferralLinkCard';
+
+const AmbassadorDashboard = () => {
+  // We'll use the first ambassador's data for this example
+  const data = getAmbassadorData('usr_001');
+
+  if (!data) {
+    return <div>Chargement des données de l'ambassadeur...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <h2 className="text-3xl font-bold tracking-tight">Tableau de Bord Ambassadeur</h2>
+        <p className="text-muted-foreground">Bienvenue, {data.name}. Voici votre aperçu.</p>
+      </header>
+      
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 space-y-6">
+          <StatusCard 
+            currentTier={data.currentTier}
+            nextTier={data.nextTier}
+            validatedReferrals={data.validatedReferrals}
+          />
+          <StatsGrid 
+            invitedCount={data.invitedCount}
+            validatedReferrals={data.validatedReferrals}
+            conversionRate={data.conversionRate}
+            generatedRevenue={data.generatedRevenue}
+          />
+          {data.currentTier.min >= 10 && (
+             <CommissionsCard 
+                monthlyCommission={data.monthlyCommission}
+                totalEarned={data.totalEarned}
+             />
+          )}
+          <ReferralsList referrals={data.referrals} />
+        </div>
+        <div className="lg:col-span-1 space-y-6">
+          <RewardsCard 
+            validatedReferrals={data.validatedReferrals}
+            usedRewards={data.usedRewards}
+            rewardsToActivate={data.rewardsToActivate}
+          />
+          <ReferralLinkCard referralCode={data.referralCode} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AmbassadorDashboard;

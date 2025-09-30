@@ -1,0 +1,46 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Euro, Calendar } from 'lucide-react';
+
+const CommissionsCard = ({ monthlyCommission, totalEarned }) => {
+  const nextPaymentDate = new Date(2024, 1, 15).toLocaleDateString('fr-FR');
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mes Commissions (Niveau Argent+)</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 sm:grid-cols-3">
+        <div className="flex items-center space-x-4">
+          <div className="p-3 rounded-full bg-secondary">
+            <Euro className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Commission mensuelle</p>
+            <p className="text-xl font-bold">€{monthlyCommission.toFixed(2)}/mois</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="p-3 rounded-full bg-secondary">
+            <Euro className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Total perçu</p>
+            <p className="text-xl font-bold">€{totalEarned.toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="flex items-center space-x-4">
+          <div className="p-3 rounded-full bg-secondary">
+            <Calendar className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Prochain paiement</p>
+            <p className="text-xl font-bold">{nextPaymentDate}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default CommissionsCard;

@@ -1,0 +1,48 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Users, CheckCircle, Percent, BarChart } from 'lucide-react';
+
+const StatItem = ({ icon, title, value, subtext }) => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle className="text-sm font-medium">{title}</CardTitle>
+      {icon}
+    </CardHeader>
+    <CardContent>
+      <div className="text-2xl font-bold">{value}</div>
+      {subtext && <p className="text-xs text-muted-foreground">{subtext}</p>}
+    </CardContent>
+  </Card>
+);
+
+const StatsGrid = ({ invitedCount, validatedReferrals, conversionRate, generatedRevenue }) => {
+  return (
+    <div>
+      <h3 className="text-lg font-semibold mb-4">Mes Stats Globales</h3>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <StatItem 
+          title="Personnes invitées" 
+          value={invitedCount} 
+          icon={<Users className="h-4 w-4 text-muted-foreground" />} 
+        />
+        <StatItem 
+          title="Abonnements validés" 
+          value={`${validatedReferrals} 🎉`}
+          icon={<CheckCircle className="h-4 w-4 text-muted-foreground" />} 
+        />
+        <StatItem 
+          title="Taux de conversion" 
+          value={`${conversionRate.toFixed(0)}%`}
+          icon={<Percent className="h-4 w-4 text-muted-foreground" />} 
+        />
+        <StatItem 
+          title="Revenus générés" 
+          value={`€${generatedRevenue.toLocaleString('fr-FR')}/an`}
+          icon={<BarChart className="h-4 w-4 text-muted-foreground" />} 
+        />
+      </div>
+    </div>
+  );
+};
+
+export default StatsGrid;

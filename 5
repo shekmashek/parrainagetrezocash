@@ -1,0 +1,19 @@
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import MainLayout from './components/layout/MainLayout';
+import AmbassadorDashboard from './pages/AmbassadorDashboard';
+import AdminDashboard from './pages/AdminDashboard';
+
+function App() {
+  return (
+    <MainLayout>
+      <Routes>
+        <Route path="/" element={<Navigate to="/ambassador" replace />} />
+        <Route path="/ambassador" element={<AmbassadorDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+      </Routes>
+    </MainLayout>
+  );
+}
+
+export default App;

@@ -1,0 +1,42 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { cn } from '../../lib/utils';
+import { Star } from 'lucide-react';
+
+const StatusCard = ({ currentTier, nextTier, validatedReferrals }) => {
+  const progressToNextTier = nextTier ? ((validatedReferrals - currentTier.min) / (nextTier.min - currentTier.min)) * 100 : 100;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mon Réseau Trézo</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Mon Statut</p>
+            <p className={cn("text-2xl font-bold", currentTier.color)}>AMBASSADEUR {currentTier.name.toUpperCase()}</p>
+          </div>
+          {nextTier && (
+            <div>
+              <div className="flex justify-between items-center mb-1 text-sm">
+                <p className="text-muted-foreground">Prochain niveau : <span className={cn("font-semibold", nextTier.color)}>{nextTier.name}</span> ({nextTier.min} parrainages)</p>
+                <p className="font-semibold text-primary">{nextTier.min - validatedReferrals} restants</p>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2.5">
+                <div className="bg-primary h-2.5 rounded-full" style={{ width: `${progressToNextTier}%` }}></div>
+              </div>
+            </div>
+          )}
+          {!nextTier && (
+            <div className="flex items-center gap-2 text-lg font-semibold text-purple-400">
+                <Star className="h-5 w-5"/> Vous avez atteint le plus haut niveau !
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default StatusCard;

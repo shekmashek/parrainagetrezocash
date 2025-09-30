@@ -1,0 +1,64 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { Check, Circle, Gift } from 'lucide-react';
+import { REWARDS } from '../../data/mockData';
+
+const RewardsCard = ({ validatedReferrals, usedRewards, rewardsToActivate }) => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mes Récompenses Débloquées</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-4">
+          {REWARDS.map((reward) => {
+            const isUnlocked = validatedReferrals >= reward.referrals;
+            const isUsed = usedRewards.includes(reward.referrals);
+            const isToActivate = rewardsToActivate.includes(reward.referrals);
+            
+            let statusIcon, statusText, statusColor;
+
+            if (isUsed) {
+              statusIcon = <Check className="h-4 w-4 text-green-400" />;
+              statusText = 'Utilisé';
+              statusColor = 'text-green-400';
+            } else if (isToActivate) {
+              statusIcon = <Check className="h-4 w-4 text-blue-400" />;
+              statusText = 'À activer';
+              statusColor = 'text-blue-400';
+            } else if (isUnlocked) {
+                statusIcon = <Check className="h-4 w-4 text-primary" />;
+                statusText = 'Débloqué';
+                statusColor = 'text-primary';
+            } else {
+              statusIcon = <Circle className="h-4 w-4 text-muted-foreground" />;
+              const remaining = reward.referrals - validatedReferrals;
+              statusText = `${remaining} restant${remaining > 1 ? 's' : ''}`;
+              statusColor = 'text-muted-foreground';
+            }
+
+            return (
+              <li key={reward.referrals} className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className={`mt-1 ${!isUnlocked && 'opacity-50'}`}>
+                    <Gift className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className={`font-semibold ${!isUnlocked && 'opacity-50'}`}>{reward.label}</p>
+                    <p className="text-sm text-muted-foreground">{reward.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  {statusIcon}
+                  <span className={statusColor}>{statusText}</span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+};
+
+export default RewardsCard;

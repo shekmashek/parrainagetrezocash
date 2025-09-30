@@ -1,0 +1,128 @@
+export const TIERS = {
+  BRONZE: { name: 'Bronze', min: 0, commission: 0, color: 'text-orange-400' },
+  ARGENT: { name: 'Argent', min: 10, commission: 0.10, color: 'text-gray-300' },
+  OR: { name: 'Or', min: 25, commission: 0.15, color: 'text-yellow-400' },
+  PLATINUM: { name: 'Platinum', min: 50, commission: 0.20, color: 'text-cyan-300' },
+  DIAMANT: { name: 'Diamant', min: 100, commission: 0.25, color: 'text-blue-300' },
+  LEGENDAIRE: { name: 'Légendaire', min: 200, commission: 0.30, color: 'text-purple-400' },
+};
+
+export const REWARDS = [
+  { referrals: 1, label: '1 mois offert', description: '1 parrainage' },
+  { referrals: 3, label: '3 mois offerts', description: '3 parrainages' },
+  { referrals: 5, label: '6 mois offerts', description: '5 parrainages' },
+  { referrals: 10, label: 'Abonnement -50% à vie', description: '10 parrainages' },
+];
+
+const generateReferrals = (count) => {
+  const statuses = ['actif', 'essai', 'inactif'];
+  const names = ['Marie D.', 'Thomas L.', 'Sophie M.', 'Marc P.', 'Laura G.', 'Julien B.', 'Claire F.', 'Paul R.'];
+  let referrals = [];
+  const now = new Date();
+  for (let i = 0; i < count; i++) {
+    const status = statuses[i % statuses.length];
+    const months = Math.floor(Math.random() * 12) + 1;
+    const registrationDate = new Date(now.getFullYear(), now.getMonth() - months, Math.floor(Math.random() * 28) + 1);
+
+    referrals.push({
+      id: i + 1,
+      name: names[i % names.length],
+      status: status,
+      since: status === 'actif' ? `Depuis ${months} mois` : (status === 'essai' ? `Expire dans ${Math.floor(Math.random() * 10)} jours` : 'Résilé'),
+      monthlyValue: status === 'actif' ? 12 : 0,
+      registrationDate: registrationDate.toISOString(),
+    });
+  }
+  return referrals;
+};
+
+const generatePaymentHistory = (referrals, tier) => {
+    if (tier.commission === 0) return [];
+    const history = [];
+    const months = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    for (let i = 0; i < 3; i++) { // Generate history for last 3 months
+        const monthIndex = (currentMonth - i + 12) % 12;
+        const year = monthIndex > currentMonth ? currentYear - 1 : currentYear;
+        const activeReferrals = referrals.filter(r => r.status === 'actif').length - Math.floor(Math.random() * 2);
+        const commission = activeReferrals * 12 * tier.commission;
+        history.push({
+            id: i,
+            month: `${months[monthIndex]} ${year}`,
+            activeReferrals: Math.max(0, activeReferrals),
+            commission: Math.max(0, commission),
+            status: i === 0 ? 'En attente' : 'Validé'
+        });
+    }
+    return history;
+}
+
+export const AMBASSADORS_DATA = [
+  {
+    id: 'usr_001',
+    name: 'Jean Dupont',
+    email: 'jean.dupont@email.com',
+    referralCode: 'JEANDP21',
+    invitedCount: 12,
+    referrals: generateReferrals(6),
+    usedRewards: [1],
+    rewardsToActivate: [3],
+  },
+  {
+    id: 'usr_002',
+    name: 'Alice Martin',
+    email: 'alice.martin@email.com',
+    referralCode: 'ALICEMT89',
+    invitedCount: 30,
+    referrals: generateReferrals(26),
+    usedRewards: [1, 3, 5, 10],
+    rewardsToActivate: [],
+  },
+  {
+    id: 'usr_003',
+    name: 'Bob Johnson',
+    email: 'bob.j@email.com',
+    referralCode: 'BOBJNSN45',
+    invitedCount: 150,
+    referrals: generateReferrals(110),
+    usedRewards: [1, 3, 5, 10],
+    rewardsToActivate: [],
+  },
+];
+
+export const getAmbassadorData = (id) => {
+    const data = AMBASSADORS_DATA.find(a => a.id === id);
+    if (!data) return null;
+
+    const validatedReferrals = data.referrals.filter(r => r.status === 'actif').length;
+    const conversionRate = data.invitedCount > 0 ? (validatedReferrals / data.invitedCount) * 100 : 0;
+    
+    const tiersArray = Object.values(TIERS).sort((a,b) => b.min - a.min);
+    const currentTier = tiersArray.find(t => validatedReferrals >= t.min);
+    const nextTierIndex = tiersArray.indexOf(currentTier) - 1;
+    const nextTier = nextTierIndex >= 0 ? tiersArray[nextTierIndex] : null;
+
+    const monthlyCommission = data.referrals
+        .filter(r => r.status === 'actif')
+        .reduce((sum, r) => sum + r.monthlyValue * currentTier.commission, 0);
+
+    const generatedRevenue = data.referrals
+        .filter(r => r.status === 'actif')
+        .reduce((sum, r) => sum + r.monthlyValue * 12, 0);
+    
+    const paymentHistory = generatePaymentHistory(data.referrals, currentTier);
+
+    return {
+        ...data,
+        validatedReferrals,
+        conversionRate,
+        currentTier,
+        nextTier,
+        monthlyCommission,
+        generatedRevenue,
+        totalEarned: monthlyCommission * 3, // Mock total earned
+        paymentHistory,
+    };
+};
